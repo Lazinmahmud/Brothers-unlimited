@@ -104,24 +104,24 @@
   background: #fff;
   
 }
-.video-content-box{
+.video-container{
   width: 100%;
   height: 280px;
 }
-.video-content-box:active{
+.video-container:active{
   background: #efefef;
 }
-.video-thumbnail{
+.video{
   width: 100%;
   height: 200px;
   background: #efefef;
 }
-.video-thumbnail img{
+.video img{
   width: 100%;
   height: 200px;
   object-fit: cover;
 }
-.profile-title-content{
+.content{
   width: 100%;
   height: 60px;
   display: flex;
@@ -133,23 +133,23 @@
   width: 20%;
   height: 60px;
 }
-.profile{
+.channel-icon{
   width: 40px;
   height: 40px;
   background: #efefef;
   border-radius: 50%;
 }
-.profile img{
+.channel-icon img{
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
 }
-.title-and-channel-name{
+.info{
   width: 100%;
   height: 60px;
 }
-.video-title{
+.title{
   margin-top: 10px;
   font-weight: 410;
   font-size: 14px;
