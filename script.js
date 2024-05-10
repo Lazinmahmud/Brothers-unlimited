@@ -45,17 +45,16 @@ document.getElementById("channelBtn").addEventListener('click', function(){
 
 
 // youtube data api
-const api_key = 'AIzaSyAo8Y1n5w-0qNyBWs_NpTZd9YL0y1rRDoU';
-const Userid = 'UCAapwYqO-D5oEeld0cgksug';
+const api_key = 'AIzaSyAfjmiTs9n_DNqYaTewZXBUoKxOoXFa9ms';
+const channelId = 'UCAapwYqO-D5oEeld0cgksug';
 const subscriberCount = document.getElementById('subscriberCount');
 const videoCardContainer = document.querySelector('.video-container');
-let video_http = "https://www.googleapis.com/youtube/v3/videos?";
 let channel_http = "https://www.googleapis.com/youtube/v3/channels?";
 const videoCount = document.getElementById('videoCount');
 
 // Function to fetch channel data
-let getdata = () => {
-    fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${Userid}&key=${api_key}`)
+let getChannelData = () => {
+    fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${channelId}&key=${api_key}`)
     .then(response => {
         return response.json()
     })
@@ -76,55 +75,41 @@ let getdata = () => {
 }
 
 // Call the function to fetch channel data
-getdata();
+getChannelData();
 
 // Function to fetch and display channel videos
-fetch(video_http + new URLSearchParams({
-    key: api_key,
-    part: 'snippet',
-    chart: 'mostPopular',
-    maxResults: 50,
-    channelId: Userid,
-}))
-.then(res => res.json())
-.then(data => {
-    data.items.forEach(item => {
-        getChannelIcon(item);
-    })
-})
-.catch(err => console.log(err));
-
-const getChannelIcon = (video_data) => {
-    fetch(channel_http + new URLSearchParams({
-        key: api_key,
-        part: 'snippet',
-        id: video_data.snippet.channelId
-    }))
+const getChannelVideos = () => {
+    fetch(`https://www.googleapis.com/youtube/v3/search?key=${api_key}&channelId=${channelId}&part=snippet,id&order=date&maxResults=50`)
     .then(res => res.json())
     .then(data => {
-        video_data.channelThumbnail = data.items[0].snippet.thumbnails.default.url;
-        makeVideoCard(video_data);
+        data.items.forEach(item => {
+            makeVideoCard(item);
+        })
     })
+    .catch(err => console.log(err));
 }
+
+// Call the function to fetch channel videos
+getChannelVideos();
 
 const makeVideoCard = (data) => {
     videoCardContainer.innerHTML += `
     <div class="video-container">
-         <div class="video" onclick="location.href = 'https://youtube.com/watch?v=${data.id}'">
+         <div class="video" onclick="location.href = 'https://youtube.com/watch?v=${data.id.videoId}'">
             <img src="${data.snippet.thumbnails.high.url}" class="thumbnail" alt="">
             <div class="content">
                 <div class="profile-cntainer">
                   <div class="channel-icon">
-                  <img src="${data.channelThumbnail}">
+                  <img class="channelLogo" src="channel-logo.jpg">
                 </div> 
                 </div>
                 <div class="info">
                     <h4 class="title">${data.snippet.title}</h4>
                     <p class="channel-name">${data.snippet.channelTitle}</p>
+                    
                 </div>
             </div>
         </div>
     </div>
     `;
 }
-
