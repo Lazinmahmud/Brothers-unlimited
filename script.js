@@ -45,84 +45,86 @@ document.getElementById("channelBtn").addEventListener('click', function(){
 
 
 // youtube data api
-const APIKey = 'AIzaSyAo8Y1n5w-0qNyBWs_NpTZd9YL0y1rRDoU';
-   const Userid = 'UCAapwYqO-D5oEeld0cgksug';
-    const subscriberCount= document.getElementById('subscriberCount');
-    
-    const videoCount = document.getElementById('videoCount');
+const api_key = 'AIzaSyAo8Y1n5w-0qNyBWs_NpTZd9YL0y1rRDoU';
+const Userid = 'UCAapwYqO-D5oEeld0cgksug';
+const subscriberCount = document.getElementById('subscriberCount');
+const videoCardContainer = document.querySelector('.video-container');
+let video_http = "https://www.googleapis.com/youtube/v3/videos?";
+let channel_http = "https://www.googleapis.com/youtube/v3/channels?";
+const videoCount = document.getElementById('videoCount');
 
-   
-
-    let getdata = () => {
-    fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${Userid}&key=${APIKey}`)
+// Function to fetch channel data
+let getdata = () => {
+    fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${Userid}&key=${api_key}`)
     .then(response => {
         return response.json()
     })
     .then(data => {
         console.log(data);
-        document.getElementById("subscriberCount").innerText = data["items"][0].statistics.subscriberCount;
-        document.getElementById("videoCount").innerText = data["items"][0].statistics.videoCount;
+        subscriberCount.innerText = data.items[0].statistics.subscriberCount;
+        videoCount.innerText = data.items[0].statistics.videoCount;
         
         let channelLogos = document.getElementsByClassName("channelLogo");
         for (let i = 0; i < channelLogos.length; i++) {
-            channelLogos[i].src = data["items"][0].snippet.thumbnails.default.url;
+            channelLogos[i].src = data.items[0].snippet.thumbnails.default.url;
         }
         
-        document.getElementById("channelName").innerText = data["items"][0].snippet.title;
-        document.getElementById("description").innerText = data["items"][0].snippet.description;
-        document.getElementById("url").innerText = data["items"][0].snippet.customUrl;
+        document.getElementById("channelName").innerText = data.items[0].snippet.title;
+        document.getElementById("description").innerText = data.items[0].snippet.description;
+        document.getElementById("url").innerText = data.items[0].snippet.customUrl;
     })
 }
 
-   getdata();
-   
-   
-   
-   
-// show channel video data 
+// Call the function to fetch channel data
+getdata();
 
-const videoId = 'vn3GcQy7wAo'; 
+// Function to fetch and display channel videos
+fetch(video_http + new URLSearchParams({
+    key: api_key,
+    part: 'snippet',
+    chart: 'mostPopular',
+    maxResults: 50,
+    channelId: Userid,
+}))
+.then(res => res.json())
+.then(data => {
+    data.items.forEach(item => {
+        getChannelIcon(item);
+    })
+})
+.catch(err => console.log(err));
 
-
-function getVideoData() {
-    fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoId}&key=${APIKey}`)
-        .then(response => response.json())
-        .then(data => {
-            // Thumbnail
-            const thumbnailUrl = data.items[0].snippet.thumbnails.default.url;
-            document.querySelector('.thumbnail').src = thumbnailUrl;
-
-            // Views
-            const views = data.items[0].statistics.viewCount;
-            document.querySelector('.views').innerText = `${views} views`;
-
-            // Title
-            const title = data.items[0].snippet.title;
-            document.querySelector('.video-title').innerText = title;
-
-            // Upload Time
-            const uploadTime = new Date(data.items[0].snippet.publishedAt);
-            const currentTime = new Date();
-            const timeDiff = currentTime - uploadTime;
-            const seconds = Math.floor(timeDiff / 1000);
-            const minutes = Math.floor(seconds / 60);
-            const hours = Math.floor(minutes / 60);
-            const days = Math.floor(hours / 24);
-
-            let uploadTimeString;
-            if (days > 0) {
-                uploadTimeString = `${days} days ago`;
-            } else if (hours > 0) {
-                uploadTimeString = `${hours} hours ago`;
-            } else if (minutes > 0) {
-                uploadTimeString = `${minutes} minutes ago`;
-            } else {
-                uploadTimeString = `${seconds} seconds ago`;
-            }
-
-            document.querySelector('.upload-time').innerText = uploadTimeString;
-        });
+const getChannelIcon = (video_data) => {
+    fetch(channel_http + new URLSearchParams({
+        key: api_key,
+        part: 'snippet',
+        id: video_data.snippet.channelId
+    }))
+    .then(res => res.json())
+    .then(data => {
+        video_data.channelThumbnail = data.items[0].snippet.thumbnails.default.url;
+        makeVideoCard(video_data);
+    })
 }
 
-// Call the function to fetch video data
-getVideoData();
+const makeVideoCard = (data) => {
+    videoCardContainer.innerHTML += `
+    <div class="video-container">
+         <div class="video" onclick="location.href = 'https://youtube.com/watch?v=${data.id}'">
+            <img src="${data.snippet.thumbnails.high.url}" class="thumbnail" alt="">
+            <div class="content">
+                <div class="profile-cntainer">
+                  <div class="channel-icon">
+                  <img src="${data.channelThumbnail}">
+                </div> 
+                </div>
+                <div class="info">
+                    <h4 class="title">${data.snippet.title}</h4>
+                    <p class="channel-name">${data.snippet.channelTitle}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
